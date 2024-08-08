@@ -1,5 +1,6 @@
 const Photo = require('../models/photoModel');
 const Folder = require('../models/folderModel');
+const HomePage = require('../models/homePageModel');
 
 // Get all folders
 exports.getAllFolders = async (req, res) => {
@@ -112,6 +113,46 @@ exports.editFolderDetails = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+// Get homePage
+exports.getHomePage = async (req, res) => {
+    try {
+        const homePage = await HomePage.findOne();
+        if (!homePage) {
+            return res.status(404).json({ message: 'Home page not found' });
+        }
+        res.json(homePage);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
+
+// Create homePage
+exports.createHomePage = async (req, res) => {
+    const newHomePage = new HomePage(req.body);
+    try {
+        const savedHomePage = await newHomePage.save();
+        res.status(201).json(savedHomePage);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+}
+
+// Edit homePage
+exports.editHomePage = async (req, res) => {
+    try {
+        let homePage = await HomePage.findOne();
+        if (!homePage) {
+            homePage = new HomePage(req.body);
+        } else {
+            homePage.set(req.body);
+        }
+        await homePage.save();
+        res.json(homePage);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
 
 
 

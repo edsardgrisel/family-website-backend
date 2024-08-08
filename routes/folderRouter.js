@@ -2,11 +2,22 @@ const express = require('express');
 const router = express.Router();
 const folderController = require('../controllers/folderController');
 
-// Get all folders
-router.get('/', folderController.getAllFolders);
+// Get home page
+router.get('/home', folderController.getHomePage);
+
+// Create home page
+router.post('/home', folderController.createHomePage);
+
+// Edit home page 
+router.put('/home', folderController.editHomePage);
 
 // Get a folder by ID
 router.get('/:folderId', folderController.getFolderById);
+
+// Get all folders
+router.get('/', folderController.getAllFolders);
+
+
 
 // Create a folder
 router.post('/', folderController.createFolder);
@@ -22,6 +33,8 @@ router.delete('/:folderId/photos/:photoId', folderController.deletePhotoFromFold
 
 // Edit folder details
 router.put('/:folderId', folderController.editFolderDetails);
+
+
 
 
 
