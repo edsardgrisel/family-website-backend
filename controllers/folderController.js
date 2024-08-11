@@ -62,6 +62,41 @@ exports.deleteFolder = async (req, res) => {
     }
 };
 
+// Get a photo from a folder
+exports.getPhotoFromFolder = async (req, res) => {
+    const folderId = req.params.folderId;
+    const photoId = req.params.photoId;
+    try {
+        const folder = await Folder.findById(folderId);
+        if (!folder) {
+            return res.status(404).json({ message: 'Folder not found' });
+        }
+        const photo = folder.photos.find(photo => photo._id.toString() === photoId);
+        if (!photo) {
+            return res.status(404).json({ message: 'Photo not found' });
+        }
+        res.json(photo);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Edit a folder
+exports.editFolder = async (req, res) => {
+    const folderId = req.params.folderId;
+    try {
+        const folder = await Folder.findById(folderId);
+        if (!folder) {
+            return res.status(404).json({ message: 'Folder not found' });
+        }
+        folder.set(req.body);
+        await folder.save();
+        res.json(folder);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 // Add a photo to a folder
 exports.addPhotoToFolder = async (req, res) => {
     const folderId = req.params.folderId;
