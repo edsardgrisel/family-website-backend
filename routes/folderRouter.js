@@ -11,6 +11,9 @@ router.post('/home', folderController.createHomePage);
 // Edit home page 
 router.put('/home', folderController.editHomePage);
 
+// Delete home page
+router.delete('/home', folderController.deleteHomePage);
+
 // Get a folder by ID
 router.get('/:folderId', folderController.getFolderById);
 

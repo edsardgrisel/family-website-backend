@@ -46,7 +46,16 @@ exports.deleteFolder = async (req, res) => {
         if (!folder) {
             return res.status(404).json({ message: 'Folder not found' });
         }
-        await folder.remove();
+        await Folder.findByIdAndDelete(folderId);
+
+        // Remove the folder from the favouriteFolders array in the homePage document
+        const homePage = await HomePage.findOne();
+        if (homePage.favouriteFolders.includes(folderId)) {
+            const folderIndex = homePage.favouriteFolders.findIndex(folder => folder === folderId);
+            homePage.favouriteFolders.splice(folderIndex, 1);
+            await homePage.save();
+        }
+
         res.json({ message: 'Folder deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -149,6 +158,20 @@ exports.editHomePage = async (req, res) => {
         }
         await homePage.save();
         res.json(homePage);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
+
+// Delete homePage
+exports.deleteHomePage = async (req, res) => {
+    try {
+        const homePage = await HomePage.findOne();
+        if (!homePage) {
+            return res.status(404).json({ message: 'Home page not found' });
+        }
+        await HomePage.findByIdAndDelete(homePage._id);
+        res.json({ message: 'Home page deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
