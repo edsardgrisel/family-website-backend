@@ -6,7 +6,8 @@ const folderSchema = new mongoose.Schema({
     location: { type: String, required: true },
     startDate: { type: String, required: true },
     endDate: { type: String, required: true },
-    photos: [photoSchema] // Embed the photo schema
+    photos: [photoSchema],
+    description: { type: String, required: false },
 });
 
 module.exports = mongoose.model('Folder', folderSchema);
