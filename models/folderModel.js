@@ -8,6 +8,7 @@ const folderSchema = new mongoose.Schema({
     endDate: { type: String, required: true },
     photos: [photoSchema],
     description: { type: String, required: false },
+    isFavorite: { type: Boolean, required: true, default: false }
 });
 
 module.exports = mongoose.model('Folder', folderSchema);
