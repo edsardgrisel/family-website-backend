@@ -2,6 +2,43 @@ const Photo = require('../models/photoModel');
 const Folder = require('../models/folderModel');
 const HomePage = require('../models/homePageModel');
 
+const AWS = require('aws-sdk');
+const multer = require('multer');
+const upload = multer();
+
+AWS.config.update({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION,
+});
+
+const s3 = new AWS.S3();
+
+exports.uploadPhotos = async (req, res) => {
+    console.log("Working--------");
+    try {
+        const uploadPromises = req.files.map((file) => {
+            const params = {
+                Bucket: process.env.BUCKET_NAME,
+                Key: `${Date.now()}_${file.originalname}`,
+                Body: file.buffer,
+                ContentType: file.mimetype,
+            };
+
+            return s3.upload(params).promise();
+        });
+
+        const results = await Promise.all(uploadPromises);
+        const urls = results.map((result) => result.Location);
+
+        console.log('Uploaded URLs:', urls); // Log the URLs to verify
+        res.json({ urls });
+    } catch (error) {
+        console.error('Error uploading photos:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
 // Get all folders
 exports.getAllFolders = async (req, res) => {
     try {
