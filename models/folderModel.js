@@ -6,7 +6,7 @@ const folderSchema = new mongoose.Schema({
     location: { type: String, required: true },
     startDate: { type: String, required: true },
     endDate: { type: String, required: true },
-    photos: [photoSchema],
+    photos: [String],
     description: { type: String, required: false },
     isFavorite: { type: Boolean, required: true, default: false }
 });
