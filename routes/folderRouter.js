@@ -1,6 +1,45 @@
 const express = require('express');
 const router = express.Router();
 const folderController = require('../controllers/folderController');
+const multer = require('multer');
+const AWS = require('aws-sdk');
+
+
+// Upload to aws    
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+AWS.config.update({
+    accessKeyId: 'YOUR_ACCESS_KEY_ID',
+    secretAccessKey: 'YOUR_SECRET_ACCESS_KEY',
+    region: 'YOUR_REGION',
+});
+
+const s3 = new AWS.S3();
+
+router.post('/upload', upload.array('photos'), async (req, res) => {
+    try {
+        const uploadPromises = req.files.map((file) => {
+            const params = {
+                Bucket: 'YOUR_BUCKET_NAME',
+                Key: `${Date.now()}_${file.originalname}`,
+                Body: file.buffer,
+                ContentType: file.mimetype,
+            };
+
+            return s3.upload(params).promise();
+        });
+
+        const results = await Promise.all(uploadPromises);
+        const urls = results.map((result) => result.Location);
+
+        res.json({ urls });
+    } catch (error) {
+        console.error('Error uploading photos:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 // Get home page
 router.get('/home', folderController.getHomePage);
