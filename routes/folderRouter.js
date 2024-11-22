@@ -7,6 +7,12 @@ const upload = multer();
 // Upload images to s3
 router.post('/upload', upload.array('photos'), folderController.uploadPhotos);
 
+// Get first photo from a folder from s3
+router.get('/:folderId/photo', folderController.getFirstPhotoFromS3);
+
+// Get all photos from a folder from s3 
+router.get('/:folderId/photos', folderController.getPhotosFromS3);
+
 // Get home page
 router.get('/home', folderController.getHomePage);
 

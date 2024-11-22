@@ -14,6 +14,59 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
+// Get first photo from a folder from s3
+exports.getFirstPhotoFromS3 = async (req, res) => {
+    const folderId = req.params.folderId;
+    try {
+        const folder = await Folder.findById(folderId);
+        if (!folder) {
+            return res.status(404).json({ message: 'Folder not found' });
+        }
+
+        const firstPhotoUrl = folder.photos[0];
+        const url = new URL(firstPhotoUrl);
+        const params = {
+            Bucket: url.hostname.split('.')[0],
+            Key: url.pathname.substring(1),
+            Expires: 60 * 60, // URL expires in 1 hour
+        };
+        const photoUrl = s3.getSignedUrl('getObject', params);
+
+        res.json({ photoUrl });
+    } catch (err) {
+        console.error('Error generating pre-signed URLs:', err);
+        res.status(500).json({ message: err.message });
+    }
+}
+
+// Get all photos from folder from s3
+exports.getPhotosFromS3 = async (req, res) => {
+    const folderId = req.params.folderId;
+    try {
+        const folder = await Folder.findById(folderId);
+        if (!folder) {
+            return res.status(404).json({ message: 'Folder not found' });
+        }
+
+        const photoUrls = folder.photos.map((photoUrl) => {
+            const url = new URL(photoUrl);
+            const params = {
+                Bucket: url.hostname.split('.')[0],
+                Key: url.pathname.substring(1),
+                Expires: 60 * 60, // URL expires in 1 hour
+            };
+            return s3.getSignedUrl('getObject', params);
+        });
+
+        res.json({ photoUrls });
+    } catch (err) {
+        console.error('Error generating pre-signed URLs:', err);
+        res.status(500).json({ message: err.message });
+    }
+}
+
+
+// Upload photos to s3
 exports.uploadPhotos = async (req, res) => {
     console.log("Working--------");
     try {
