@@ -4,6 +4,9 @@ const folderController = require('../controllers/folderController');
 const multer = require('multer');
 const upload = multer();
 
+// Delete a photo from a folder from s3
+router.delete('/delete/:photoUrl', folderController.deletePhotoFromS3);
+
 // Upload images to s3
 router.post('/upload', upload.array('photos'), folderController.uploadPhotos);
 
@@ -12,6 +15,8 @@ router.get('/:folderId/photo', folderController.getFirstPhotoFromS3);
 
 // Get all photos from a folder from s3 
 router.get('/:folderId/photos', folderController.getPhotosFromS3);
+
+// Delete a photo from a folder from s3
 
 // Get home page
 router.get('/home', folderController.getHomePage);

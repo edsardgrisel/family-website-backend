@@ -14,6 +14,25 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
+// Delete a photo from a folder from s3
+exports.deletePhotoFromS3 = async (req, res) => {
+    console.log(req.params.photoUrl);
+    const photoUrl = decodeURIComponent(req.params.photoUrl)
+    console.log(photoUrl);
+    try {
+        const url = new URL(photoUrl);
+        const params = {
+            Bucket: process.env.BUCKET_NAME,
+            Key: photoUrl,
+        };
+        await s3.deleteObject(params).promise();
+    } catch (err) {
+        console.error('Error deleting photo from s3:', err);
+        res.status(500).json({ message: err.message });
+    }
+};
+
+
 // Get first photo from a folder from s3
 exports.getFirstPhotoFromS3 = async (req, res) => {
     const folderId = req.params.folderId;
@@ -48,17 +67,18 @@ exports.getPhotosFromS3 = async (req, res) => {
             return res.status(404).json({ message: 'Folder not found' });
         }
 
-        const photoUrls = folder.photos.map((photoUrl) => {
+        const photoUrlTuples = folder.photos.map((photoUrl) => {
             const url = new URL(photoUrl);
             const params = {
                 Bucket: url.hostname.split('.')[0],
                 Key: url.pathname.substring(1),
                 Expires: 60 * 60, // URL expires in 1 hour
             };
-            return s3.getSignedUrl('getObject', params);
+            const signedPhotoUrl = s3.getSignedUrl('getObject', params);
+            return [photoUrl, signedPhotoUrl];
         });
 
-        res.json({ photoUrls });
+        res.json({ photoUrlTuples });
     } catch (err) {
         console.error('Error generating pre-signed URLs:', err);
         res.status(500).json({ message: err.message });
@@ -216,14 +236,13 @@ exports.deletePhotoFromFolder = async (req, res) => {
             console.log('Folder not found');
             return res.status(404).json({ message: 'Folder not found' });
         }
-        const photoIndex = folder.photos.findIndex(photo => photo._id.toString() === photoId);
+        const photoIndex = folder.photos.findIndex(photo => photo === photoId);
         if (photoIndex === -1) {
             console.log('Photo not found');
             return res.status(404).json({ message: 'Photo not found' });
         }
         folder.photos.splice(photoIndex, 1); // Remove the photo from the array
         await folder.save(); // Save the parent document
-        await Photo.findByIdAndDelete(photoId); // Delete the photo document
         console.log('Photo deleted');
         res.json({ message: 'Photo deleted' });
     } catch (err) {
