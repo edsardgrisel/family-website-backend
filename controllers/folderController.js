@@ -16,20 +16,19 @@ const s3 = new AWS.S3();
 
 // Delete a photo from a folder from s3
 exports.deletePhotoFromS3 = async (req, res) => {
-    console.log(req.params.photoUrl);
-    const photoUrl = decodeURIComponent(req.params.photoUrl)
-    console.log(photoUrl);
+    console.log(`bucket: ${process.env.BUCKET_NAME}`);
+    console.log(`Key: ${req.params.photoUrl}`);
     try {
-        const url = new URL(photoUrl);
         const params = {
             Bucket: process.env.BUCKET_NAME,
-            Key: photoUrl,
+            Key: req.params.photoUrl,
         };
         await s3.deleteObject(params).promise();
     } catch (err) {
         console.error('Error deleting photo from s3:', err);
         res.status(500).json({ message: err.message });
     }
+    res.json({ message: 'Photo deleted' });
 };
 
 
@@ -228,6 +227,7 @@ exports.addPhotoToFolder = async (req, res) => {
 
 // Delete a photo from a folder
 exports.deletePhotoFromFolder = async (req, res) => {
+
     const folderId = req.params.folderId;
     const photoId = req.params.photoId;
     try {
@@ -236,15 +236,10 @@ exports.deletePhotoFromFolder = async (req, res) => {
             console.log('Folder not found');
             return res.status(404).json({ message: 'Folder not found' });
         }
-        const photoIndex = folder.photos.findIndex(photo => photo === photoId);
-        if (photoIndex === -1) {
-            console.log('Photo not found');
-            return res.status(404).json({ message: 'Photo not found' });
-        }
-        folder.photos.splice(photoIndex, 1); // Remove the photo from the array
-        await folder.save(); // Save the parent document
-        console.log('Photo deleted');
+        folder.photos = folder.photos.filter(url => !url.includes(photoId));
+        await folder.save();
         res.json({ message: 'Photo deleted' });
+
     } catch (err) {
         console.log('Error:', err.message);
         res.status(500).json({ message: err.message });
