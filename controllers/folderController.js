@@ -16,8 +16,6 @@ const s3 = new AWS.S3();
 
 // Delete a photo from a folder from s3
 exports.deletePhotoFromS3 = async (req, res) => {
-    console.log(`bucket: ${process.env.BUCKET_NAME}`);
-    console.log(`Key: ${req.params.photoUrl}`);
     try {
         const params = {
             Bucket: process.env.BUCKET_NAME,
@@ -87,7 +85,6 @@ exports.getPhotosFromS3 = async (req, res) => {
 
 // Upload photos to s3
 exports.uploadPhotos = async (req, res) => {
-    console.log("Working--------");
     try {
         const uploadPromises = req.files.map((file) => {
             const params = {
@@ -103,11 +100,27 @@ exports.uploadPhotos = async (req, res) => {
         const results = await Promise.all(uploadPromises);
         const urls = results.map((result) => result.Location);
 
-        console.log('Uploaded URLs:', urls); // Log the URLs to verify
         res.json({ urls });
     } catch (error) {
         console.error('Error uploading photos:', error);
         res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+exports.getPhotoFromS3 = async (req, res) => {
+    const photoName = req.params.photoName;
+    try {
+        const params = {
+            Bucket: process.env.BUCKET_NAME,
+            Key: photoName,
+            Expires: 60 * 60, // URL expires in 1 hour
+        };
+        const signedPhotoUrl = s3.getSignedUrl('getObject', params);
+
+        res.json({ signedPhotoUrl });
+    } catch (err) {
+        console.error('Error generating pre-signed URL:', err);
+        res.status(500).json({ message: err.message });
     }
 };
 
@@ -233,7 +246,6 @@ exports.deletePhotoFromFolder = async (req, res) => {
     try {
         const folder = await Folder.findById(folderId);
         if (!folder) {
-            console.log('Folder not found');
             return res.status(404).json({ message: 'Folder not found' });
         }
         folder.photos = folder.photos.filter(url => !url.includes(photoId));
