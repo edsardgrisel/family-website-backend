@@ -39,6 +39,10 @@ exports.getFirstPhotoFromS3 = async (req, res) => {
             return res.status(404).json({ message: 'Folder not found' });
         }
 
+        if (folder.photos.length === 0) {
+            res.json({ photoUrl: null });
+        }
+
         const firstPhotoUrl = folder.photos[0];
         const url = new URL(firstPhotoUrl);
         const params = {
