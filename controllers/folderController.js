@@ -170,14 +170,6 @@ exports.deleteFolder = async (req, res) => {
         }
         await Folder.findByIdAndDelete(folderId);
 
-        // Remove the folder from the favouriteFolders array in the homePage document
-        const homePage = await HomePage.findOne();
-        if (homePage.favouriteFolders.includes(folderId)) {
-            const folderIndex = homePage.favouriteFolders.findIndex(folder => folder === folderId);
-            homePage.favouriteFolders.splice(folderIndex, 1);
-            await homePage.save();
-        }
-
         res.json({ message: 'Folder deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });
