@@ -41,6 +41,7 @@ exports.getFirstPhotoFromS3 = async (req, res) => {
 
         if (folder.photos.length === 0) {
             res.json({ photoUrl: null });
+            return;
         }
 
         const firstPhotoUrl = folder.photos[0];
