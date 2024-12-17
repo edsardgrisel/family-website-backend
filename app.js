@@ -23,7 +23,8 @@ const calendarRouter = require('./routes/calendarRouter');
 app.use('/calendar', calendarRouter);
 const commentRouter = require('./routes/commentRouter');
 app.use('/comments', commentRouter);
-
+const chatRoutes = require('./routes/chatRoutes');
+app.use('/chat', chatRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
