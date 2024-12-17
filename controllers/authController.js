@@ -2,6 +2,11 @@ const bcrypt = require('bcrypt');
 
 exports.verifyPassword = async (req, res) => {
     const { password } = req.body;
+
+    if (!password) {
+        return res.status(400).json({ success: false, message: 'Password is required' });
+    }
+
     const hashedPassword = process.env.HASHED_PASSWORD;
 
     // Compare the entered password with the hashed password
